@@ -1,40 +1,42 @@
-from turtle import Screen, Turtle
-from snake import Snake
-from food import Food
-from scoreboard import Scoreboard
-import time
+from play_game import Game
+import tkinter as tk
+from tkinter import ttk  # Importiamo ttk per la combobox
 
-screen = Screen()
-screen.setup(width=600, height=600)
-screen.bgcolor("black")
-screen.title("Snake game")
-screen.tracer(0)
-# se spengo il tracer, ogni volta che si vuole visualizzare lo schermo aggiornato, bisogna fare uno screen update
+class SelectBoxApp:
+    def __init__(self, root):
+        self.game=Game()
 
-snake = Snake()
+        self.root = root
+        self.root.title("Menu")
 
+        # Creiamo una Label per mostrare la selezione
+        self.label = tk.Label(root, text="Seleziona un'opzione")
+        self.label.pack(pady=10)
 
-screen.listen()
-screen.onkey(snake.up, "Up")
-screen.onkey(snake.down, "Down")
-screen.onkey(snake.left, "Left")
-screen.onkey(snake.right, "Right")
+        # Creiamo una Combobox (SelectBox)
+        self.select_box = ttk.Combobox(root, values=["Riprova", "Esci", "Elimina highscore"])
+        self.select_box.set("Scegli un'opzione")  # Imposta il testo predefinito
+        self.select_box.pack(pady=10)
+        self.select_box.bind("<<ComboboxSelected>>", self.on_select)
 
-game_is_on = True
-food = Food()
-scoreboard=Scoreboard()
-while game_is_on and not snake.check_collision():  # not check_collision perche' di base ritorna false
-    screen.update()
-    time.sleep(0.1)
+    def on_select(self, event):
+        # Ottieni il valore selezionato
+        scelta = self.select_box.get()
 
-    if snake.head.distance(food) < 15:
-        food.random_location() #se viene colpito riposiziona sullo schermo
-        snake.extend()  # aggiunge un segmento in coda
-        scoreboard.increase_score()
+        if scelta=="Riprova":
+            self.game.screen.clear()
+            self.game.__init__()
+            
+        elif scelta=="Esci":
+            self.root.destroy()
+            self.game.screen.bye()
+            #blocco mancante
+        else:
+            with open("scores.txt", "w") as file:
+                file.write("0")
+            
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = SelectBoxApp(root)
+    root.mainloop()
 
-    snake.move()
-    game_is_on = snake.check_inside_screen()
-
-scoreboard.game_over()
-screen.update()
-screen.exitonclick()
